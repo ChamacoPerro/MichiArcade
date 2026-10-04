@@ -1,0 +1,12 @@
+{
+  "appId": "com.michicade.app",
+  "appName": "MICHICADE",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": true,
+    "backgroundColor": "#0d0e15"
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}

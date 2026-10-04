@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>MICHICADE - Arcade de Minijuegos de Gatos</title>
+
+  <!-- Google Fonts Pixel -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="styles/arcade.css">
+  <link rel="stylesheet" href="styles/ui.css">
+  <link rel="stylesheet" href="styles/games.css">
+
+  <!-- Mobile & PWA App Setup -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ff4757">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+</head>
+<body>
+
+  <!-- ARCADE CONTAINER -->
+  <div id="arcade-machine">
+    <div id="arcade-bezel">
+
+      <!-- TOP MARQUEE -->
+      <header id="arcade-marquee">
+        <div class="marquee-title">
+          <span>🐱</span>
+          <strong>MICHICADE</strong>
+        </div>
+        <div class="marquee-controls">
+          <button id="marquee-sfx-btn" class="icon-btn" title="Activar/Desactivar Sonido">🔊</button>
+          <button id="marquee-music-btn" class="icon-btn" title="Activar/Desactivar Música">🎵</button>
+        </div>
+      </header>
+
+      <!-- SCREEN CONTAINER WITH CRT SCANLINES -->
+      <div id="arcade-screen-container">
+        <div class="crt-overlay"></div>
+
+        <!-- TOP HUD (Visible inside games & menus) -->
+        <div id="arcade-hud" style="display: none;">
+          <div class="hud-top-row">
+            <div class="hud-profile">
+              <div class="hud-cat-avatar">
+                <canvas id="hud-cat-canvas" width="32" height="32"></canvas>
+              </div>
+              <div class="hud-player-info">
+                <span id="hud-level-val" class="hud-level-tag">NIVEL 1</span>
+                <span id="hud-title-val" class="hud-title-tag">Novato Michi</span>
+              </div>
+            </div>
+            <div class="hud-currencies">
+              <div class="currency-badge coins">
+                <span class="currency-icon">🪙</span>
+                <span id="hud-coins-val">50</span>
+              </div>
+              <div class="currency-badge tickets">
+                <span class="currency-icon">🎟️</span>
+                <span id="hud-tickets-val">5</span>
+              </div>
+            </div>
+          </div>
+          <!-- XP Bar -->
+          <div class="hud-xp-container">
+            <span class="hud-xp-label">XP</span>
+            <div class="hud-xp-bar-bg">
+              <div id="hud-xp-fill" class="hud-xp-bar-fill"></div>
+            </div>
+            <span id="hud-xp-text" class="hud-xp-text">0 / 50 XP</span>
+          </div>
+        </div>
+
+        <!-- SCREEN CONTENT (Scrollable/Viewport) -->
+        <main id="screen-content">
+
+          <!-- ==============================================================
+               SCREEN 1: BOOT & TITLE SCREEN
+               ============================================================== -->
+          <section id="screen-boot" class="screen active booting">
+            <div class="boot-logo-box">
+              <h1 class="boot-title">MICHICADE</h1>
+              <p class="boot-subtitle">ARCADE DE GATOS 16-BIT</p>
+            </div>
+
+            <!-- Two Protagonist Cats Stage -->
+            <div class="boot-cats-stage">
+              <canvas id="boot-cat-siames" class="boot-cat-canvas" width="80" height="80"></canvas>
+              <canvas id="boot-cat-gris" class="boot-cat-canvas" width="80" height="80"></canvas>
+            </div>
+
+            <button id="btn-press-start" class="press-start-btn">
+              <span>▶</span> PRESS START
+            </button>
+
+            <div class="boot-credits">
+              <p>PROTAGONISTAS: SIAMÉS & GATO GRIS</p>
+              <p>© MICHICADE - LISTO PARA PC, WEB & ANDROID</p>
+            </div>
+          </section>
+
+          <!-- ==============================================================
+               SCREEN 2: MAIN MENU HUB
+               ============================================================== -->
+          <section id="screen-menu" class="screen">
+            <div class="menu-banner">
+              <div class="menu-banner-text">
+                <h2>¡HOLA, MICHI-JUGADOR!</h2>
+                <p>Elige un minijuego, sube de nivel hasta 50 y desbloquea nuevos gatos.</p>
+              </div>
+              <canvas id="banner-cat-canvas" class="menu-banner-cat" width="56" height="56"></canvas>
+            </div>
+
+            <div class="menu-grid">
+              <button id="nav-btn-games" class="menu-nav-btn primary">
+                <div class="btn-content-left">
+                  <div class="btn-icon-box">🎮</div>
+                  <div class="btn-text-box">
+                    <div class="btn-title">JUGAR MINIJUEGOS</div>
+                    <div class="btn-subtitle">6 juegos arcade con récords y retos</div>
+                  </div>
+                </div>
+                <div class="btn-arrow">▶</div>
+              </button>
+
+              <button id="nav-btn-collection" class="menu-nav-btn collection">
+                <div class="btn-content-left">
+                  <div class="btn-icon-box">🐱</div>
+                  <div class="btn-text-box">
+                    <div class="btn-title">COLECCIÓN DE MICHIS</div>
+                    <div class="btn-subtitle">Gatos coleccionables y compañeros</div>
+                  </div>
+                </div>
+                <div class="btn-arrow">▶</div>
+              </button>
+
+              <button id="nav-btn-records" class="menu-nav-btn records">
+                <div class="btn-content-left">
+                  <div class="btn-icon-box">🏆</div>
+                  <div class="btn-text-box">
+                    <div class="btn-title">RÉCORDS & ESTADÍSTICAS</div>
+                    <div class="btn-subtitle">Puntuaciones máximas y top personal</div>
+                  </div>
+                </div>
+                <div class="btn-arrow">▶</div>
+              </button>
+
+              <button id="nav-btn-prizes" class="menu-nav-btn prizes">
+                <div class="btn-content-left">
+                  <div class="btn-icon-box">🎁</div>
+                  <div class="btn-text-box">
+                    <div class="btn-title">PREMIOS & MISIONES</div>
+                    <div class="btn-subtitle">Garra arcade y misiones diarias</div>
+                  </div>
+                </div>
+                <div class="btn-arrow">▶</div>
+              </button>
+
+              <button id="nav-btn-options" class="menu-nav-btn options">
+                <div class="btn-content-left">
+                  <div class="btn-icon-box">⚙️</div>
+                  <div class="btn-text-box">
+                    <div class="btn-title">OPCIONES</div>
+                    <div class="btn-subtitle">Audio, CRT y gestión de partida</div>
+                  </div>
+                </div>
+                <div class="btn-arrow">▶</div>
+              </button>
+            </div>
+          </section>
+
+          <!-- ==============================================================
+               SCREEN 3: MINIGAMES SELECTOR
+               ============================================================== -->
+          <section id="screen-games" class="screen">
+            <div class="screen-header">
+              <button class="back-btn">◀ VOLVER</button>
+              <h2 class="screen-title">🎮 MINIJUEGOS ARCADE</h2>
+              <div></div>
+            </div>
+            <div id="games-list-container" class="games-list">
+              <!-- Dynamically populated -->
+            </div>
+          </section>
+
+          <!-- ==============================================================
+               SCREEN 4: CAT COLLECTION
+               ============================================================== -->
+          <section id="screen-collection" class="screen">
+            <div class="screen-header">
+              <button class="back-btn">◀ VOLVER</button>
+              <h2 class="screen-title">🐱 COLECCIÓN DE GATOS</h2>
+              <div></div>
+            </div>
+            <div id="cats-collection-grid" class="cats-grid">
+              <!-- Dynamically populated -->
+            </div>
+          </section>
+
+          <!-- ==============================================================
+               SCREEN 5: RECORDS & STATS
+               ============================================================== -->
+          <section id="screen-records" class="screen">
+            <div class="screen-header">
+              <button class="back-btn">◀ VOLVER</button>
+              <h2 class="screen-title">🏆 RÉCORDS & TOP PERSONAL</h2>
+              <div></div>
+            </div>
+            <div class="records-container">
+              <div class="stats-summary-grid">
+                <div class="stat-box">
+                  <span class="stat-label">PARTIDAS JUGADAS</span>
+                  <strong id="stat-total-games" class="stat-val">0</strong>
+                </div>
+                <div class="stat-box">
+                  <span class="stat-label">NIVEL MÁXIMO</span>
+                  <strong id="stat-max-level" class="stat-val">Nivel 1</strong>
+                </div>
+                <div class="stat-box">
+                  <span class="stat-label">GATOS DESBLOQUEADOS</span>
+                  <strong id="stat-cats-unlocked" class="stat-val">2 / 12</strong>
+                </div>
+                <div class="stat-box">
+                  <span class="stat-label">MONEDAS TOTALES</span>
+                  <strong id="stat-total-coins" class="stat-val">50</strong>
+                </div>
+              </div>
+
+              <div class="records-section-title">MEJORES PUNTUACIONES POR MINIJUEGO:</div>
+              <div id="records-list-container" style="display: flex; flex-direction: column; gap: 8px;">
+                <!-- Populated via UI -->
+              </div>
+            </div>
+          </section>
+
+          <!-- ==============================================================
+               SCREEN 6: PREMIOS & MISIONES
+               ============================================================== -->
+          <section id="screen-prizes" class="screen">
+            <div class="screen-header">
+              <button class="back-btn">◀ VOLVER</button>
+              <h2 class="screen-title">🎁 GARRA & MISIONES</h2>
+              <div></div>
+            </div>
+            <div class="prizes-container">
+              <!-- Gacha Claw Machine -->
+              <div class="gacha-machine-card">
+                <div style="font-size: 9px; color: var(--color-gold-light); font-weight: bold;">
+                  🕹️ GARRA ARCADE SORPRESA
+                </div>
+                <div class="claw-stage">
+                  <div id="claw-rope" class="claw-rope"></div>
+                  <div id="claw-hand" class="claw-hand">🦾</div>
+                  <div class="capsules-pool">
+                    <span>🔴</span><span>🟡</span><span>🟣</span><span>🔵</span><span>🟢</span>
+                  </div>
+                </div>
+                <div class="gacha-btn-group">
+                  <button id="gacha-roll-coins" class="gacha-roll-btn">
+                    🪙 JUGAR (35 Monedas)
+                  </button>
+                  <button id="gacha-roll-tickets" class="gacha-roll-btn tickets">
+                    🎟️ JUGAR (2 Tickets)
+                  </button>
+                </div>
+              </div>
+
+              <!-- Daily Quests -->
+              <div style="font-size: 9px; color: var(--color-cyan); margin-top: 4px;">
+                📋 MISIONES DIARIAS:
+              </div>
+              <div id="quests-list-container" style="display: flex; flex-direction: column; gap: 8px;">
+                <!-- Populated via UI -->
+              </div>
+            </div>
+          </section>
+
+          <!-- ==============================================================
+               SCREEN 7: OPTIONS & SETTINGS
+               ============================================================== -->
+          <section id="screen-options" class="screen">
+            <div class="screen-header">
+              <button class="back-btn">◀ VOLVER</button>
+              <h2 class="screen-title">⚙️ OPCIONES</h2>
+              <div></div>
+            </div>
+            <div class="options-list">
+              <div class="option-row">
+                <div class="option-info">
+                  <span class="option-name">EFECTOS DE SONIDO (SFX)</span>
+                  <span class="option-desc">Sonidos de saltos, monedas y maullidos</span>
+                </div>
+                <button id="toggle-sfx" class="toggle-switch-btn on">ON</button>
+              </div>
+
+              <div class="option-row">
+                <div class="option-info">
+                  <span class="option-name">MÚSICA ARCADE (BGM)</span>
+                  <span class="option-desc">Música retro chiptune sintetizada</span>
+                </div>
+                <button id="toggle-music" class="toggle-switch-btn on">ON</button>
+              </div>
+
+              <div class="option-row">
+                <div class="option-info">
+                  <span class="option-name">FILTRO RETRO CRT</span>
+                  <span class="option-desc">Líneas de escaneo y brillo retro</span>
+                </div>
+                <button id="toggle-crt" class="toggle-switch-btn on">ON</button>
+              </div>
+
+              <div class="option-row">
+                <div class="option-info">
+                  <span class="option-name">GUARDADO LOCAL</span>
+                  <span class="option-desc">Progreso guardado automáticamente en el navegador</span>
+                </div>
+                <span style="font-size:7px;color:var(--color-secondary);">ACTIVO ✓</span>
+              </div>
+
+              <button id="btn-reset-save" class="danger-btn">
+                ⚠️ REINICIAR PROGRESO COMPLETO
+              </button>
+            </div>
+          </section>
+
+          <!-- ==============================================================
+               MINIJUEGO 1: ATRAPA AL GATO
+               ============================================================== -->
+          <section id="screen-game-atrapa" class="screen">
+            <div class="ingame-hud">
+              <button class="ingame-pause-btn ingame-exit-btn">◀ SALIR</button>
+              <div class="ingame-stat-box">
+                <span class="ingame-stat-label">PUNTOS</span>
+                <strong id="atrapa-score" class="ingame-stat-value">0</strong>
+              </div>
+              <div class="ingame-stat-box">
+                <span class="ingame-stat-label">NIVEL</span>
+                <strong id="atrapa-level" class="ingame-stat-value">NIVEL 1</strong>
+              </div>
+              <div id="atrapa-lives" class="ingame-lives">❤️❤️❤️</div>
+            </div>
+            <div id="atrapa-board"></div>
+          </section>
+
+          <!-- ==============================================================
+               MINIJUEGO 2: MEMORIA MICHI
+               ============================================================== -->
+          <section id="screen-game-memoria" class="screen">
+            <div class="ingame-hud">
+              <button class="ingame-pause-btn ingame-exit-btn">◀ SALIR</button>
+              <div class="ingame-stat-box">
+                <span class="ingame-stat-label">PUNTOS</span>
+                <strong id="memoria-score" class="ingame-stat-value">0</strong>
+              </div>
+              <div class="ingame-stat-box">
+                <span class="ingame-stat-label">TIEMPO</span>
+                <strong id="memoria-timer" class="ingame-stat-value">⏱️ 30s</strong>
+              </div>
+              <div class="ingame-stat-box">
+                <span class="ingame-stat-label">ETAPA</span>
+                <strong id="memoria-level" class="ingame-stat-value">NIVEL 1</strong>
+              </div>
+            </div>
+            <div id="memoria-board"></div>
+          </section>
+
+          <!-- ==============================================================
+               MINIJUEGO 3: ALIMENTA AL GATO
+               ============================================================== -->
+          <section id="screen-game-alimenta" class="screen">
+            <div class="ingame-hud">
+              <button class="ingame-pause-btn ingame-exit-btn">◀ SALIR</button>
+              <div class="ingame-stat-box">
+                <span class="ingame-stat-label">PUNTOS</span>
+                <strong id="alimenta-score" class="ingame-stat-value">0</strong>
+              </div>
+              <div class="ingame-stat-box">
+                <span class="ingame-stat-label">VELOCIDAD</span>
+                <strong id="alimenta-speed" class="ingame-stat-value">VEL: x1.0</strong>
+              </div>
+              <div id="alimenta-lives" class="ingame-lives">❤️❤️❤️</div>
+            </div>
+            <div id="alimenta-stage">
+              <div id="alimenta-lane-area" class="alimenta-lane-area"></div>
+              <div class="alimenta-feeder-bottom">
+                <div class="feeder-cat-box">
+                  <div id="feeder-bubble" class="feeder-reaction-bubble">¡ÑAM!</div>
+                  <canvas id="feeder-cat-canvas" width="72" height="72"></canvas>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ==============================================================
+               MINIJUEGO 4: GATO NINJA
+               ============================================================== -->
+          <section id="screen-game-ninja" class="screen">
+            <div class="ingame-hud">
+              <button class="ingame-pause-btn ingame-exit-btn">◀ SALIR</button>
+              <div class="ingame-stat-box">
+                <span class="ingame-stat-label">DISTANCIA</span>
+                <strong id="ninja-distance" class="ingame-stat-value">0m</strong>
+              </div>
+              <div class="ingame-stat-box">
+                <span class="ingame-stat-label">PUNTOS</span>
+                <strong id="ninja-score" class="ingame-stat-value">0</strong>
+              </div>
+              <div id="ninja-lives" class="ingame-lives">❤️❤️❤️</div>
+            </div>
+            <div class="game-canvas-wrapper">
+              <canvas id="ninja-canvas" class="game-canvas"></canvas>
+              <!-- Touch Jump Button for mobile -->
+              <div class="mobile-touch-controls" style="justify-content: flex-end;">
+                <button id="ninja-jump-btn" class="touch-btn jump-btn">
+                  <span>▲</span>
+                  <span>SALTAR</span>
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- ==============================================================
+               MINIJUEGO 5: GATO CORREDOR
+               ============================================================== -->
+          <section id="screen-game-corredor" class="screen">
+            <div class="ingame-hud">
+              <button class="ingame-pause-btn ingame-exit-btn">◀ SALIR</button>
+              <div class="ingame-stat-box">
+                <span class="ingame-stat-label">ESCENARIO</span>
+                <strong id="corredor-scenario" class="ingame-stat-value">📍 Habitación</strong>
+              </div>
+              <div class="ingame-stat-box">
+                <span class="ingame-stat-label">PUNTOS</span>
+                <strong id="corredor-score" class="ingame-stat-value">0</strong>
+              </div>
+              <div class="ingame-stat-box">
+                <strong id="corredor-powerup" style="color:var(--color-gold);font-size:7px;"></strong>
+              </div>
+              <div id="corredor-lives" class="ingame-lives">❤️❤️❤️</div>
+            </div>
+            <div class="game-canvas-wrapper">
+              <canvas id="corredor-canvas" class="game-canvas"></canvas>
+              <!-- Touch Jump & Slide buttons for mobile -->
+              <div class="mobile-touch-controls">
+                <button id="corredor-slide-btn" class="touch-btn slide-btn">
+                  <span>▼</span>
+                  <span>AGÁCHATE</span>
+                </button>
+                <button id="corredor-jump-btn" class="touch-btn jump-btn">
+                  <span>▲</span>
+                  <span>SALTAR</span>
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- ==============================================================
+               MINIJUEGO 6: NO DESPIERTES AL GATO
+               ============================================================== -->
+          <section id="screen-game-no-despiertes" class="screen">
+            <div class="ingame-hud">
+              <button class="ingame-pause-btn ingame-exit-btn">◀ SALIR</button>
+              <div class="ingame-stat-box">
+                <span class="ingame-stat-label">PUNTOS</span>
+                <strong id="no-despiertes-score" class="ingame-stat-value">0</strong>
+              </div>
+              <div class="ingame-stat-box">
+                <span class="ingame-stat-label">ESTADO</span>
+                <strong style="color:var(--color-cyan);font-size:8px;">SIGILO FELINO</strong>
+              </div>
+            </div>
+            <div id="no-despiertes-stage">
+              <!-- Noise Gauge -->
+              <div class="noise-meter-container">
+                <div class="noise-meter-header">
+                  <span style="color:var(--color-text-muted);">BARRA DE RUIDO:</span>
+                  <strong id="noise-pct-text" style="color:var(--color-secondary);">0%</strong>
+                </div>
+                <div class="noise-bar-bg">
+                  <div id="noise-bar-fill" class="noise-bar-fill"></div>
+                </div>
+              </div>
+
+              <!-- Sleeping Cat Center View -->
+              <div class="sleeping-cat-view">
+                <div class="sleeping-cat-pillow">
+                  <span class="zzz-floater">Zzz...</span>
+                  <canvas id="sleeping-cat-canvas" class="sleeping-cat-canvas" width="140" height="80"></canvas>
+                </div>
+              </div>
+
+              <!-- Interactive Stealth Task Panel -->
+              <div class="stealth-task-panel">
+                <div id="stealth-task-title" class="task-title">Objetivo: Sigilo</div>
+                <div id="stealth-interactive-area" class="task-interactive-area"></div>
+              </div>
+            </div>
+          </section>
+
+        </main>
+
+        <!-- ==============================================================
+             MODALS: RESULTS, INSPECT, LEVEL UP & TOASTS
+             ============================================================== -->
+
+        <!-- Game Result Modal (Game Over / Victory) -->
+        <div id="modal-game-result" class="modal-overlay">
+          <div class="result-box">
+            <h2 id="result-title" class="result-title">¡FIN DE PARTIDA!</h2>
+            <div id="result-stats-body" class="result-stats-table">
+              <!-- Populated dynamically -->
+            </div>
+            <div class="result-buttons">
+              <button id="result-btn-retry" class="result-btn retry">🔁 REINTENTAR</button>
+              <button id="result-btn-menu" class="result-btn menu">🏠 MENÚ</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cat Inspect Modal -->
+        <div id="modal-cat-inspect" class="modal-overlay">
+          <div class="modal-dialog">
+            <div class="modal-header">
+              <h3 id="inspect-cat-name">Nombre del Michi</h3>
+              <div id="inspect-cat-rarity" class="rarity-pill rarity-comun" style="margin-top:4px;">COMÚN</div>
+            </div>
+            <div id="inspect-cat-preview" class="modal-cat-preview"></div>
+            <div id="inspect-cat-desc" class="modal-cat-desc">Descripción divertida del gato.</div>
+            <div class="modal-actions">
+              <button id="inspect-poke-btn" class="modal-btn" style="background:var(--color-gold);color:#000;">
+                🐾 TOCAR MICHI
+              </button>
+              <button id="inspect-equip-btn" class="modal-btn">
+                🐱 EQUIPAR
+              </button>
+            </div>
+            <button class="modal-btn close modal-close-trigger">CERRAR</button>
+          </div>
+        </div>
+
+        <!-- Level Up Modal -->
+        <div id="modal-levelup" class="modal-overlay">
+          <div class="modal-dialog" style="border-color:var(--color-gold);">
+            <div class="modal-header">
+              <h3 id="levelup-number" style="color:var(--color-gold);font-size:16px;">¡NIVEL 2!</h3>
+              <div id="levelup-title" style="color:var(--color-cyan);font-size:9px;margin-top:4px;">Gatito Curioso</div>
+            </div>
+            <div style="font-size:32px;margin:8px 0;">🎉 🐾 🏆</div>
+            <div id="levelup-rewards" class="modal-cat-desc" style="font-size:8px;line-height:1.6;">
+              <!-- Populated by progression -->
+            </div>
+            <button class="modal-btn modal-close-trigger" style="background:var(--color-gold);color:#000;">
+              ¡GENIAL!
+            </button>
+          </div>
+        </div>
+
+        <!-- Toast Notifications Container -->
+        <div id="toast-container"></div>
+
+      </div>
+
+      <!-- BOTTOM ARCADE DECK -->
+      <footer id="arcade-deck">
+        <div class="deck-info">
+          <span>PORTABLE 16-BIT RETRO EDITION</span>
+        </div>
+        <div class="deck-buttons">
+          <div id="deck-btn-b" class="arcade-round-btn btn-b" title="Botón B (Acción / Deslizar)">B</div>
+          <div id="deck-btn-a" class="arcade-round-btn btn-a" title="Botón A (Saltar / Seleccionar)">A</div>
+        </div>
+      </footer>
+
+    </div>
+  </div>
+
+  <!-- SCRIPT LIBRARIES & MODULES -->
+  <script src="js/sprites.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/progression.js"></script>
+  <script src="js/achievements.js"></script>
+  <script src="js/quests.js"></script>
+  <script src="js/games/atrapa-gato.js"></script>
+  <script src="js/games/memoria-michi.js"></script>
+  <script src="js/games/alimenta-gato.js"></script>
+  <script src="js/games/gato-ninja.js"></script>
+  <script src="js/games/gato-corredor.js"></script>
+  <script src="js/games/no-despiertes.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/main.js"></script>
+
+  <!-- Service Worker Registration for Offline & Mobile APK -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration notice:', err));
+      });
+    }
+  </script>
+</body>
+</html>
